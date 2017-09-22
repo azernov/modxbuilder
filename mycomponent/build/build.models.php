@@ -6,7 +6,7 @@ $mtime = $mtime[1] + $mtime[0];
 $tstart = $mtime;
 set_time_limit(0);
 
-$buildConfig = include dirname(__FILE__) . '/build.config.php';
+$buildConfig = include dirname(__FILE__) . '/config/config.inc.php';
 require_once $buildConfig['tools_root'] . "modxbuilder.class.php";
 
 
@@ -21,10 +21,5 @@ $modx->setLogTarget(XPDO_CLI_MODE ? 'ECHO' : 'HTML');
 
 $modxBuilder = new modxBuilder($modx,$buildConfig);
 
-//Здесь мы генерируем xml схему
-$modxBuilder->writeSchema(true,true,false);
-
-//Здесь мы парсим схему и генерируем все необходимые модели
+//Парсим схему и генерируем модели и map.inc-файлы
 $modxBuilder->parseSchema();
-
-$modxBuilder->buildComponent();

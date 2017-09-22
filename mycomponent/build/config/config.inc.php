@@ -3,7 +3,7 @@
 //If you need to update only builder component files - set COMPONENT_BUILD to true.
 define("COMPONENT_BUILD", true);
 
-$root = dirname(dirname(dirname(dirname(__FILE__)))) . '/';
+$root = dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/';
 $builderRoot = $root . "modxbuilder/";
 
 $buildConfig = array(

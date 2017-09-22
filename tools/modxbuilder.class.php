@@ -38,7 +38,8 @@ class modxBuilder
             //Подключаем наш класс генератора
             include_once $this->config['modx_root'] . 'core/xpdo/om/mysql/xpdogenerator.class.php';
             include_once($this->config['tools_root'] . "xpdogenerator.class.php");
-            $this->generator = new xPDOGenerator_my($this->modx->getManager());
+            $manager = $this->modx->getManager();
+            $this->generator = new xPDOGenerator_my($manager);
         }
         return $this->generator;
     }

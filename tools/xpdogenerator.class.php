@@ -1,10 +1,5 @@
 <?php
 /**
- * Include the parent {@link xPDOGenerator} class.
- */
-include_once (dirname(dirname(dirname(dirname(__FILE__)))) . '/www/core/xpdo/om/mysql/xpdogenerator.class.php');
-
-/**
  * Класс переопределяющий несколько методов стандартного mysql генератора
  */
 class xPDOGenerator_my extends xPDOGenerator_mysql {

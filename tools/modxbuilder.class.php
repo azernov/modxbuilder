@@ -191,14 +191,270 @@ class modxBuilder
         return $this->builder;
     }
 
-    public function buildComponent()
+    /**
+     * @param modCategory $category
+     * @param array $snippets
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addSnippetsToCategory(&$category,$snippets,&$attr,$updateObject = true){
+        $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Snippets'] = array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+            xPDOTransport::UNIQUE_KEY => 'name',
+        );
+        return $category->addMany($snippets);
+    }
+
+    /**
+     * @param modCategory $category
+     * @param array modChunk[] $chunks
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addChunksToCategory(&$category,$chunks,&$attr,$updateObject = true){
+        $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Chunks'] = array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+            xPDOTransport::UNIQUE_KEY => 'name',
+        );
+        return $category->addMany($chunks);
+    }
+
+    /**
+     * @param modCategory $category
+     * @param array modTemplate[] $templates
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addTemplatesToCategory(&$category,$templates,&$attr,$updateObject = true){
+        $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Templates'] = array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+            xPDOTransport::UNIQUE_KEY => 'name',
+        );
+        return $category->addMany($templates);
+    }
+
+    /**
+     * @param modCategory $category
+     * @param array modPlugin[] $templates
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addPluginsToCategory(&$category, $plugins, &$attr, $updateObject = true){
+        $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Plugins'] = array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+            xPDOTransport::UNIQUE_KEY => 'name',
+        );
+        return $category->addMany($plugins);
+    }
+
+    /**
+     * @param modCategory $category
+     * @param array modTemplateVar[] $tvs
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addTVsToCategory(&$category, $tvs, &$attr, $updateObject = true){
+        $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['TemplateVars'] = array(
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+            xPDOTransport::UNIQUE_KEY => 'name',
+        );
+        return $category->addMany($tvs);
+    }
+
+    /**
+     * @param modTransportVehicle $vehicle
+     * @param array $resolvers
+     * @return int
+     */
+    public function addResolvers(&$vehicle,$resolvers){
+        $cnt = 0;
+        foreach($resolvers as $type => $resolver){
+            if(isset($resolver['source']))
+            {
+                $cnt++;
+                $vehicle->resolve($type,$resolver);
+            }
+            else{
+                foreach($resolver as $resolverItem){
+                    $cnt++;
+                    $vehicle->resolve($type,$resolverItem);
+                }
+            }
+        }
+        return $cnt;
+    }
+
+    /**
+     * @param $settings
+     * @param array $attr
+     * @return bool
+     */
+    public function addSystemSettings($settings,$attr = array()){
+        $noError = true;
+
+        $sysSettingsAttr = array_merge(array(
+            xPDOTransport::UNIQUE_KEY => 'key',
+            xPDOTransport::PRESERVE_KEYS => true,
+            xPDOTransport::UPDATE_OBJECT => false,
+        ),$attr);
+        foreach ($settings as $setting) {
+            $vehicle = $this->builder->createVehicle($setting,$sysSettingsAttr);
+            $noError = $noError && $this->builder->putVehicle($vehicle);
+        }
+        return $noError;
+    }
+
+    public function addPackageAttributes(){
+        $attrs = array();
+        if(file_exists($this->config['source_docs'] . 'changelog.txt')){
+            $attrs['changelog'] = file_get_contents($this->config['source_docs'] . 'changelog.txt');
+        }
+        if(file_exists($this->config['source_docs'] . 'license.txt')){
+            $attrs['license'] = file_get_contents($this->config['source_docs'] . 'license.txt');
+        }
+        if(file_exists($this->config['source_docs'] . 'readme.txt')){
+            $attrs['readme'] = file_get_contents($this->config['source_docs'] . 'readme.txt');
+        }
+        if(file_exists($this->config['data'] . 'setup.options.php')){
+            $attrs['setup-options'] = array('source' => $this->config['data'] . 'setup.options.php');
+        }
+        $this->builder->setPackageAttributes($attrs);
+    }
+
+    public function buildComponent($options = array())
     {
         $this->getPackageBulder();
-        $this->builder->createPackage($this->config['package_name'], $this->config['package_version'], $this->config['package_release']);
+        $this->builder->createPackage($this->config['real_package_name'], $this->config['package_version'], $this->config['package_release']);
         $this->builder->registerNamespace($this->config['package_name'], false, true, "{core_path}components/{$this->config['package_name']}/");
 
-        //Затем начинаем процесс по упаковке и переносу
-        //TODO сделать процесс упаковки и переноса c возможностью сборки из базы (база->файл->пакет)
+        // Create new category for chunks and snippets
+        $this->modx->log(xPDO::LOG_LEVEL_INFO,'Creating new category: '.$this->config['real_package_name']);
+
+        /** @var modCategory $category */
+        $category= $this->modx->newObject('modCategory');
+        $category->set('category',$this->config['real_package_name']);
+
+        // Define attributes for category transport
+        $categoryAttr = array(
+            xPDOTransport::UNIQUE_KEY => 'category',
+            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::UPDATE_OBJECT => true,
+            xPDOTransport::RELATED_OBJECTS => true,
+        );
+
+        //Define snippets
+        if (isset($options['BUILD_SNIPPET_UPDATE']))
+        {
+            /** @var modSnippet $snippets */
+            $snippets = include $this->config['data'] . 'transport.snippets.php';
+            if (!is_array($snippets)){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are snippets empty? Skip them');
+            }
+            elseif($this->addSnippetsToCategory($category,$snippets,$categoryAttr,$options['BUILD_SNIPPET_UPDATE'])){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added snippets: ' . count($snippets) . '.');
+            }
+        }
+
+        //Define chunks
+        if (isset($options['BUILD_CHUNK_UPDATE']))
+        {
+            /** @var modChunk[] $chunks */
+            $chunks = include $this->config['data'] . 'transport.chunks.php';
+            if (!is_array($chunks)){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are chunks empty? Skip them');
+            }
+            elseif($this->addChunksToCategory($category,$chunks,$categoryAttr,$options['BUILD_CHUNK_UPDATE'])){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added chunks: ' . count($chunks) . '.');
+            }
+        }
+
+        //Define templates
+        if (isset($options['BUILD_TEMPLATE_UPDATE']))
+        {
+            /** @var modTemplate[] $templates */
+            $templates = include $this->config['data'] . 'transport.templates.php';
+            if (!is_array($templates)){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are templates empty? Skip them');
+            }
+            elseif($this->addTemplatesToCategory($category,$templates,$categoryAttr,$options['BUILD_TEMPLATE_UPDATE'])){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added templates: ' . count($templates) . '.');
+            }
+        }
+
+        //Define tvs
+        /** @var modTemplateVar[] $tvs */
+        $tvs = include $this->config['data'] . 'transport.tvs.php';
+        if (!is_array($tvs)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Are template variables empty? Skip them');
+        }
+        elseif($this->addTVsToCategory($category,$tvs,$categoryAttr,true)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added template variables: ' . count($tvs) . '.');
+        }
+
+        if(isset($templates) && is_array($templates)){
+            foreach($templates as $template){
+                //TODO add tvs to templates
+            }
+        }
+
+        //Define plugins
+        if (isset($options['BUILD_PLUGIN_UPDATE']))
+        {
+            $plugins = include $this->config['data'] . 'transport.plugins.php';
+            if (!is_array($plugins)){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are plugins empty? Skip them');
+            }
+            elseif($this->addPluginsToCategory($category,$plugins,$categoryAttr,$options['BUILD_PLUGIN_UPDATE'])){
+                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added templates: ' . count($plugins) . '.');
+            }
+        }
+
+        $vehicle = $this->builder->createVehicle($category,$categoryAttr);
+        $this->builder->putVehicle($vehicle);
+
+        //Define file resolvers
+        $resolvers = include $this->config['resolvers'] . 'resolver.files.php';
+        if(!is_array($resolvers)){
+            $this->modx->log(modX::LOG_LEVEL_INFO,'Are file resolvers empty? Skip them');
+        }
+        else{
+            $count = $this->addResolvers($vehicle,$resolvers);
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolvers: ' . $count . '.');
+        }
+        
+        $this->builder->putVehicle($vehicle);
+
+        //Define system settings
+        $settings = include include $this->config['data'].'transport.settings.php';
+        if (!is_array($settings)) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'Are system settings empty? Skip them');
+        } else {
+            $this->addSystemSettings($settings);
+            $this->modx->log(modX::LOG_LEVEL_INFO,'Added system settings: '.count($settings).'.');
+        }
+
+        $this->addPackageAttributes();
+        $this->modx->log(modX::LOG_LEVEL_INFO,'Added package attributes!');
+
+        //Start packing into zip
+        $this->modx->log(modX::LOG_LEVEL_INFO,'Start packing into zip');
+
+        if($this->builder->pack()){
+            $this->modx->log(modX::LOG_LEVEL_INFO,'Packet was successfully packed!');
+        }
+        else{
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'Something went wrong... Error while packing into zip');
+        }
     }
 
     /**

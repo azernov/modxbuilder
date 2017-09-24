@@ -5,8 +5,12 @@ define("COMPONENT_BUILD", true);
 
 $root = dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/';
 $builderRoot = $root . "modxbuilder/";
+$modxRoot = $root . "www/";
 
 $buildConfig = array(
+    //Name for displaying
+    "real_package_name" => "MyComponent",
+    //name for folder
     "package_name" => "mycomponent",
     "package_version" => "0.1",
     "package_release" => "",
@@ -19,7 +23,7 @@ $buildConfig = array(
     //switch to false if you don't need to rewrite your map.inc-files
     "regenerate_maps" => true,
 
-    "modx_root" => $root . "www/",
+    "modx_root" => $modxRoot,
     "builder_root" => $builderRoot,
     "tools_root" => $builderRoot . "tools/",
 );
@@ -35,10 +39,11 @@ if (COMPONENT_BUILD)
         "build" => $builderComponentRoot . "build/",
         "resolvers" => $builderComponentRoot . "build/resolvers/",
         "data" => $builderComponentRoot . "build/data/",
-        "source_core" => $root . "www/core/components/{$buildConfig['package_name']}/",
-        "lexicon" => $root . "www/core/components/{$buildConfig['package_name']}/lexicon/",
-        "source_assets" => $root . "www/assets/components/{$buildConfig['package_name']}/",
-        "docs" => $root . "core/components/{$buildConfig['package_name']}/docs/",
+
+        "source_core" => $modxRoot . "core/components/{$buildConfig['package_name']}/",
+        "source_lexicon" => $modxRoot . "core/components/{$buildConfig['package_name']}/lexicon/",
+        "source_assets" => $modxRoot . "assets/components/{$buildConfig['package_name']}/",
+        "source_docs" => $modxRoot . "core/components/{$buildConfig['package_name']}/docs/",
 
         "package_dir" => $builderComponentRoot . "core/components/{$buildConfig['package_name']}",
         "model_dir" => $builderComponentRoot . "core/components/{$buildConfig['package_name']}/model",
@@ -60,10 +65,11 @@ else
         "build" => $builderComponentRoot . "build/",
         "resolvers" => $builderComponentRoot . "build/resolvers/",
         "data" => $builderComponentRoot . "build/data/",
-        "source_core" => $root . "www/core/components/{$buildConfig['package_name']}/",
-        "lexicon" => $root . "www/core/components/{$buildConfig['package_name']}/lexicon/",
-        "source_assets" => $root . "www/assets/components/{$buildConfig['package_name']}/",
-        "docs" => $root . "www/core/components/{$buildConfig['package_name']}/docs/",
+
+        "source_core" => $modxRoot . "core/components/{$buildConfig['package_name']}/",
+        "source_lexicon" => $modxRoot . "core/components/{$buildConfig['package_name']}/lexicon/",
+        "source_assets" => $modxRoot . "assets/components/{$buildConfig['package_name']}/",
+        "source_docs" => $modxRoot . "core/components/{$buildConfig['package_name']}/docs/",
 
         "package_dir" => $root . "core/components/{$buildConfig['package_name']}",
         "model_dir" => $root . "core/components/{$buildConfig['package_name']}/model",
@@ -79,11 +85,11 @@ else
     ));
 }
 
-unset($root);
-
 //Объявляем базовые константы
-define("MODX_CORE_PATH", $buildConfig['root'] . 'www/core/');
-define("MODX_BASE_PATH", $buildConfig['root'] . 'www/');
+define("MODX_CORE_PATH", $modxRoot . "core/");
+define("MODX_BASE_PATH", $modxRoot);
 define('MODX_BASE_URL', '/');
+
+unset($root,$modxRoot,$builderRoot,$builderComponentRoot);
 
 return $buildConfig;

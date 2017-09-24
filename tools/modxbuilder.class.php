@@ -125,24 +125,6 @@ class modxBuilder
             }
         }
 
-        // Use this to generate classes from your schema
-        if ($this->config['regenerate_classes'])
-        {
-            $this->modx->log(MODX_LOG_LEVEL_INFO, 'Attempting to remove/regenerate class files...');
-            modxBuilder::deleteClassFiles($this->config["class_dir"], $verbose);
-            modxBuilder::deleteClassFiles($this->config["mysql_class_dir"], $verbose);
-        }
-
-        // Use this to generate maps from your schema
-        if ($this->config['regenerate_maps'])
-        {
-            if ($verbose)
-            {
-                $this->modx->log(MODX_LOG_LEVEL_INFO, 'Attempting to remove/regenerate map files...');
-            }
-            modxBuilder::deleteMapFiles($this->config["mysql_class_dir"], $verbose);
-        }
-
         $mtime = microtime();
         $mtime = explode(" ", $mtime);
         $mtime = $mtime[1] + $mtime[0];
@@ -161,7 +143,7 @@ class modxBuilder
         }
     }
 
-    public function parseSchema()
+    public function parseSchema($verbose = true)
     {
         $this->modx->loadClass('transport.modPackageBuilder', '', false, true);
         $this->modx->setLogLevel(modX::LOG_LEVEL_INFO);
@@ -177,6 +159,25 @@ class modxBuilder
             $this->modx->log(modX::LOG_LEVEL_ERROR, 'Schema file not found!');
             die();
         }
+
+        // Use this to generate classes from your schema
+        if ($this->config['regenerate_classes'])
+        {
+            $this->modx->log(MODX_LOG_LEVEL_INFO, 'Attempting to remove/regenerate class files...');
+            modxBuilder::deleteClassFiles($this->config["class_dir"], $verbose);
+            modxBuilder::deleteClassFiles($this->config["mysql_class_dir"], $verbose);
+        }
+
+        // Use this to generate maps from your schema
+        if ($this->config['regenerate_maps'])
+        {
+            if ($verbose)
+            {
+                $this->modx->log(MODX_LOG_LEVEL_INFO, 'Attempting to remove/regenerate map files...');
+            }
+            modxBuilder::deleteMapFiles($this->config["mysql_class_dir"], $verbose);
+        }
+
         $this->getGenerator()->parseSchema($this->config["xml_schema_file"], $this->config["model_dir"] . "/");
 
         $this->modx->log(modX::LOG_LEVEL_INFO, 'Done!');

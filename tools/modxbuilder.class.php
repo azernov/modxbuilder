@@ -255,7 +255,7 @@ class modxBuilder
             xPDOTransport::RELATED_OBJECTS => true,
             xPDOTransport::RELATED_OBJECT_ATTRIBUTES => array(
                 'PluginEvents' => array(
-                    xPDOTransport::PRESERVE_KEYS => false,
+                    xPDOTransport::PRESERVE_KEYS => true,
                     xPDOTransport::UPDATE_OBJECT => $updateObject,
                     xPDOTransport::UNIQUE_KEY => ['pluginid', 'event'],
                 )
@@ -279,7 +279,7 @@ class modxBuilder
             xPDOTransport::RELATED_OBJECTS => true,
             xPDOTransport::RELATED_OBJECT_ATTRIBUTES => array(
                 'TemplateVarTemplates' => array(
-                    xPDOTransport::PRESERVE_KEYS => false,
+                    xPDOTransport::PRESERVE_KEYS => true,
                     xPDOTransport::UPDATE_OBJECT => $updateObject,
                     xPDOTransport::UNIQUE_KEY => ['tmplvarid','templateid'],
                 )

@@ -18,7 +18,7 @@ foreach($realMenus as $realMenu){
     /** @var modMenu $menu */
     $menu = $this->modx->newObject('modMenu');
     $menuData = $realMenu->toArray();
-    $menu->fromArray($menuData);
+    $menu->fromArray($menuData,'',true);
     $menus[] = $menu;
 }
 

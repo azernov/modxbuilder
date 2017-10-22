@@ -18,7 +18,7 @@ foreach($realSettings as $realSetting){
     /** @var modSystemSetting $setting */
     $setting = $this->modx->newObject('modSystemSetting');
     $settingData = $realSetting->toArray();
-    $setting->fromArray($settingData);
+    $setting->fromArray($settingData,'',true);
     $settings[] = $setting;
 }
 

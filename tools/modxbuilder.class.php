@@ -463,7 +463,6 @@ class modxBuilder
             $this->modx->log(modX::LOG_LEVEL_INFO,'Are file resolvers empty? Skip them');
         }
         else{
-            $vehicle->_modxbuilder = &$this;
             $count = $this->addResolvers($vehicle,$resolvers);
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolvers: ' . $count . '.');
         }

@@ -8,11 +8,10 @@ if ($object->xpdo) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
             $modx =& $object->xpdo;
-            /** @var modxBuilder $modxbuilder */
-            $modxbuilder = $this->_modxbuilder;
 
-            $packageName = $modxbuilder->config['package_name'];
-            $modelPath = $modx->getOption($packageName.'.core_path',null,$modxbuilder->config['source_core']).'/model/';
+            //TODO put your package name here
+            $packageName = 'mycomponent';
+            $modelPath = $modx->getOption($packageName.'.core_path',null,$modx->getOption('core_path').'components/'.$packageName.'/').'model/';
             $modx->addPackage($packageName,$modelPath);
             $manager = $modx->getManager();
             //TODO add your database related custom objects

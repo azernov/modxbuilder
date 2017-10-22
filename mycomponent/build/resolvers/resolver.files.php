@@ -10,5 +10,9 @@ return [
             'target' => "return MODX_ASSETS_PATH.'components/';",
         ]
     ],
-    /*'php' => []*/
+    'php' => [
+        [
+            'source' => $this->config['resolvers'].'resolver.tables.php'
+        ]
+    ]
 ];

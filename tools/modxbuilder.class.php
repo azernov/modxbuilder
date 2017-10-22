@@ -9,8 +9,8 @@ class modxBuilder
     /**
      * @var modX $modx
      */
-    protected $modx;
-    protected $config = array();
+    public $modx;
+    public $config = array();
 
     /** @var modPackageBuilder */
     public $builder;
@@ -463,6 +463,7 @@ class modxBuilder
             $this->modx->log(modX::LOG_LEVEL_INFO,'Are file resolvers empty? Skip them');
         }
         else{
+            $vehicle->_modxbuilder = &$this;
             $count = $this->addResolvers($vehicle,$resolvers);
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolvers: ' . $count . '.');
         }

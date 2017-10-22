@@ -1,34 +1,35 @@
 <?php
 /**
  * @var modxBuilder $this
+ * @var string $categoryName
+ * @var string $namespace
  */
 
 $snippets = array();
-/* @avr modSnippet $snippet */
-$snippet = $this->modx->newObject('modSnippet');
 
-$snippetContent = 'return date("Y-m-d");';
-//Удаляем <?php теги
-preg_match('#\<\?php(.*)#is', $snippetContent, $data);
-$snippetContent = $data[1];
-
-$snippet->fromArray(array(
-    'id' => 0,
-    'name' => 'testSnippet',
-    'description' => 'test description',
-    'snippet' => $snippetContent,
-    'static' => 0,
-    'source' => 1,
-    'static_file' => "core/components/{$this->config['package_name']}/elements/snippets/testSnippet.php",
-), '', true, true);
-
-$snippet->setProperties(array(
-    array(
-        'name' => 'test_snippet_property1',
-        'desc' => 'mycmp_prop_test_snippet_property_1',
-        'lexicon' => 'mycmp:default',
-    )
+/** @var modCategory $mainCategory */
+$mainCategory = $this->modx->getObject('modCategory',array(
+    'category' => $categoryName
 ));
-$snippets[] = $snippet;
-unset($snippet,$snippetContent);
+
+if(!$mainCategory) return $snippets;
+
+/** @var modSnippet[] $realSnippets */
+$realSnippets = $mainCategory->getMany('Snippets');
+
+if(!$realSnippets) return $snippets;
+
+foreach($realSnippets as $realSnippet){
+    /** @var modSnippet $snippet */
+    $snippet = $this->modx->newObject('modSnippet');
+    $snippetData = $realSnippet->toArray();
+    $snippetData['id'] = 0;
+    $snippet->fromArray($snippetData);
+    $props = $realSnippet->getProperties();
+    $snippet->setProperties($props);
+    $snippets[] = $snippet;
+}
+
+unset($realSnippets,$snippetData,$props);
+
 return $snippets;

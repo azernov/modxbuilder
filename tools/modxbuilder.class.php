@@ -296,20 +296,42 @@ class modxBuilder
     }
 
     /**
-     * @param $settings
+     * @param modSystemSetting[] $settings
      * @param array $attr
+     * @param bool $updateObject
      * @return bool
      */
-    public function addSystemSettings($settings,$attr = array()){
+    public function addSystemSettings($settings,$attr = array(), $updateObject = false){
         $noError = true;
 
         $sysSettingsAttr = array_merge(array(
             xPDOTransport::UNIQUE_KEY => 'key',
             xPDOTransport::PRESERVE_KEYS => true,
-            xPDOTransport::UPDATE_OBJECT => false,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
         ),$attr);
         foreach ($settings as $setting) {
             $vehicle = $this->builder->createVehicle($setting,$sysSettingsAttr);
+            $noError = $noError && $this->builder->putVehicle($vehicle);
+        }
+        return $noError;
+    }
+
+    /**
+     * @param modMenu[] $menus
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addMenus($menus,$attr = array(), $updateObject = true){
+        $noError = true;
+
+        $menuSettingsArray = array_merge(array(
+            xPDOTransport::UNIQUE_KEY => 'text',
+            xPDOTransport::PRESERVE_KEYS => true,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+        ),$attr);
+        foreach ($menus as $menu) {
+            $vehicle = $this->builder->createVehicle($menu,$menuSettingsArray);
             $noError = $noError && $this->builder->putVehicle($vehicle);
         }
         return $noError;
@@ -332,14 +354,17 @@ class modxBuilder
         $this->builder->setPackageAttributes($attrs);
     }
 
-    public function buildComponent($options = array())
+    public function buildComponent()
     {
         $this->getPackageBulder();
-        $this->builder->createPackage($this->config['real_package_name'], $this->config['package_version'], $this->config['package_release']);
+        $this->builder->createPackage(str_replace(' ','',$this->config['real_package_name']), $this->config['package_version'], $this->config['package_release']);
+        $namespace = $this->config['package_name'];
+        $this->modx->log(xPDO::LOG_LEVEL_INFO,'Registering new namespace: '.$namespace);
         $this->builder->registerNamespace($this->config['package_name'], false, true, "{core_path}components/{$this->config['package_name']}/");
 
         // Create new category for chunks and snippets
-        $this->modx->log(xPDO::LOG_LEVEL_INFO,'Creating new category: '.$this->config['real_package_name']);
+        $categoryName = $this->config['real_package_name'];
+        $this->modx->log(xPDO::LOG_LEVEL_INFO,'Creating new category: '.$categoryName);
 
         /** @var modCategory $category */
         $category= $this->modx->newObject('modCategory');
@@ -354,70 +379,63 @@ class modxBuilder
         );
 
         //Define snippets
-        if (isset($options['BUILD_SNIPPET_UPDATE']))
-        {
-            /** @var modSnippet $snippets */
-            $snippets = include $this->config['data'] . 'transport.snippets.php';
-            if (!is_array($snippets)){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are snippets empty? Skip them');
-            }
-            elseif($this->addSnippetsToCategory($category,$snippets,$categoryAttr,$options['BUILD_SNIPPET_UPDATE'])){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added snippets: ' . count($snippets) . '.');
-            }
+        /** @var modSnippet $snippets */
+        $snippets = include $this->config['data'] . 'transport.snippets.php';
+        if (!is_array($snippets)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Are snippets empty? Skip them');
+        }
+        elseif($this->addSnippetsToCategory($category,$snippets,$categoryAttr)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added snippets: ' . count($snippets) . '.');
         }
 
+
         //Define chunks
-        if (isset($options['BUILD_CHUNK_UPDATE']))
-        {
-            /** @var modChunk[] $chunks */
-            $chunks = include $this->config['data'] . 'transport.chunks.php';
-            if (!is_array($chunks)){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are chunks empty? Skip them');
-            }
-            elseif($this->addChunksToCategory($category,$chunks,$categoryAttr,$options['BUILD_CHUNK_UPDATE'])){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added chunks: ' . count($chunks) . '.');
-            }
+        /** @var modChunk[] $chunks */
+        $chunks = include $this->config['data'] . 'transport.chunks.php';
+        if (!is_array($chunks)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Are chunks empty? Skip them');
+        }
+        elseif($this->addChunksToCategory($category,$chunks,$categoryAttr)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added chunks: ' . count($chunks) . '.');
         }
 
         //Define templates
-        if (isset($options['BUILD_TEMPLATE_UPDATE']))
-        {
-            /** @var modTemplate[] $templates */
-            $templates = include $this->config['data'] . 'transport.templates.php';
-            if (!is_array($templates)){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are templates empty? Skip them');
-            }
-            elseif($this->addTemplatesToCategory($category,$templates,$categoryAttr,$options['BUILD_TEMPLATE_UPDATE'])){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added templates: ' . count($templates) . '.');
-            }
+        /** @var modTemplate[] $templates */
+        $templates = include $this->config['data'] . 'transport.templates.php';
+        if (!is_array($templates)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Are templates empty? Skip them');
+        }
+        elseif($this->addTemplatesToCategory($category,$templates,$categoryAttr)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added templates: ' . count($templates) . '.');
         }
 
         //Define tvs
         /** @var modTemplateVar[] $tvs */
         $tvs = include $this->config['data'] . 'transport.tvs.php';
-        if (!is_array($tvs)){
+        if (!is_array($tvs))
+        {
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Are template variables empty? Skip them');
         }
-        elseif($this->addTVsToCategory($category,$tvs,$categoryAttr,true)){
+        elseif ($this->addTVsToCategory($category, $tvs, $categoryAttr, true))
+        {
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Added template variables: ' . count($tvs) . '.');
         }
 
-        if(isset($templates) && is_array($templates)){
-            foreach($templates as $template){
+        /*if (isset($templates) && is_array($templates))
+        {
+            foreach ($templates as $template)
+            {
                 //TODO add tvs to templates
             }
-        }
+        }*/
 
         //Define plugins
-        if (isset($options['BUILD_PLUGIN_UPDATE']))
-        {
-            $plugins = include $this->config['data'] . 'transport.plugins.php';
-            if (!is_array($plugins)){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Are plugins empty? Skip them');
-            }
-            elseif($this->addPluginsToCategory($category,$plugins,$categoryAttr,$options['BUILD_PLUGIN_UPDATE'])){
-                $this->modx->log(modX::LOG_LEVEL_INFO, 'Added templates: ' . count($plugins) . '.');
-            }
+        $plugins = include $this->config['data'] . 'transport.plugins.php';
+        if (!is_array($plugins)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Are plugins empty? Skip them');
+        }
+        elseif($this->addPluginsToCategory($category,$plugins,$categoryAttr)){
+            $this->modx->log(modX::LOG_LEVEL_INFO, 'Added plugins: ' . count($plugins) . '.');
         }
 
         $vehicle = $this->builder->createVehicle($category,$categoryAttr);
@@ -436,12 +454,21 @@ class modxBuilder
         $this->builder->putVehicle($vehicle);
 
         //Define system settings
-        $settings = include include $this->config['data'].'transport.settings.php';
+        $settings = include $this->config['data'].'transport.settings.php';
         if (!is_array($settings)) {
             $this->modx->log(modX::LOG_LEVEL_ERROR,'Are system settings empty? Skip them');
         } else {
             $this->addSystemSettings($settings);
             $this->modx->log(modX::LOG_LEVEL_INFO,'Added system settings: '.count($settings).'.');
+        }
+
+        //Define menu items
+        $menus = include $this->config['data'].'transport.menu.php';
+        if (!is_array($menus)) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'Are menu items empty? Skip them');
+        } else {
+            $this->addMenus($menus);
+            $this->modx->log(modX::LOG_LEVEL_INFO,'Added menu items: '.count($menus).'.');
         }
 
         $this->addPackageAttributes();

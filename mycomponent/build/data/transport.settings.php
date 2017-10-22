@@ -1,18 +1,27 @@
 <?php
 /**
  * @var modxBuilder $this
+ * @var string $categoryName
+ * @var string $namespace
  */
 
 $settings = array();
-$setting = $this->modx->newObject('modSystemSetting');
-$setting->fromArray(
-    array(
-        'key' => 'test_setting',
-        'namespace' => $this->config['package_name'],
-        'xtype' => 'textfield',
-        'value' => 'test_value',
-        'area' => 'mycmp_main',
-    ),'',true,true);
-$settings[] = $setting;
-unset($setting);
+
+$realSettings = $this->modx->getCollection('modSystemSetting',array(
+    'namespace' => $namespace
+));
+
+if(!$realSettings) return $settings;
+
+/** @var modSystemSetting[] $realSettings */
+foreach($realSettings as $realSetting){
+    /** @var modSystemSetting $setting */
+    $setting = $this->modx->newObject('modSystemSetting');
+    $settingData = $realSetting->toArray();
+    $setting->fromArray($settingData);
+    $settings[] = $setting;
+}
+
+unset($realSettings,$settingData);
+
 return $settings;

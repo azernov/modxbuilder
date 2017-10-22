@@ -201,7 +201,7 @@ class modxBuilder
      */
     public function addSnippetsToCategory(&$category,$snippets,&$attr,$updateObject = true){
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Snippets'] = array(
-            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
             xPDOTransport::UNIQUE_KEY => 'name',
         );
@@ -217,7 +217,7 @@ class modxBuilder
      */
     public function addChunksToCategory(&$category,$chunks,&$attr,$updateObject = true){
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Chunks'] = array(
-            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
             xPDOTransport::UNIQUE_KEY => 'name',
         );
@@ -233,7 +233,7 @@ class modxBuilder
      */
     public function addTemplatesToCategory(&$category,$templates,&$attr,$updateObject = true){
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Templates'] = array(
-            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
             xPDOTransport::UNIQUE_KEY => 'name',
         );
@@ -249,9 +249,17 @@ class modxBuilder
      */
     public function addPluginsToCategory(&$category, $plugins, &$attr, $updateObject = true){
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Plugins'] = array(
-            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
             xPDOTransport::UNIQUE_KEY => 'name',
+            xPDOTransport::RELATED_OBJECTS => true,
+            xPDOTransport::RELATED_OBJECT_ATTRIBUTES => array(
+                'PluginEvents' => array(
+                    xPDOTransport::PRESERVE_KEYS => false,
+                    xPDOTransport::UPDATE_OBJECT => $updateObject,
+                    xPDOTransport::UNIQUE_KEY => ['pluginid', 'event'],
+                )
+            )
         );
         return $category->addMany($plugins);
     }
@@ -265,9 +273,17 @@ class modxBuilder
      */
     public function addTVsToCategory(&$category, $tvs, &$attr, $updateObject = true){
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['TemplateVars'] = array(
-            xPDOTransport::PRESERVE_KEYS => false,
+            xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
             xPDOTransport::UNIQUE_KEY => 'name',
+            xPDOTransport::RELATED_OBJECTS => true,
+            xPDOTransport::RELATED_OBJECT_ATTRIBUTES => array(
+                'TemplateVarTemplates' => array(
+                    xPDOTransport::PRESERVE_KEYS => false,
+                    xPDOTransport::UPDATE_OBJECT => $updateObject,
+                    xPDOTransport::UNIQUE_KEY => ['tmplvarid','templateid'],
+                )
+            )
         );
         return $category->addMany($tvs);
     }

@@ -24,11 +24,9 @@ foreach($realTemplates as $realTemplate){
     $templateData = $realTemplate->toArray();
     $templateData['id'] = 0;
     $template->fromArray($templateData);
-    $props = $realTemplate->getProperties();
-    $template->setProperties($props);
     $templates[] = $template;
 }
 
-unset($realTemplates,$templateData,$props);
+unset($realTemplates,$templateData);
 
 return $templates;

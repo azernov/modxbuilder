@@ -25,11 +25,9 @@ foreach($realSnippets as $realSnippet){
     $snippetData = $realSnippet->toArray();
     $snippetData['id'] = 0;
     $snippet->fromArray($snippetData);
-    $props = $realSnippet->getProperties();
-    $snippet->setProperties($props);
     $snippets[] = $snippet;
 }
 
-unset($realSnippets,$snippetData,$props);
+unset($realSnippets,$snippetData);
 
 return $snippets;

@@ -29,12 +29,10 @@ foreach($realPlugins as $realPlugin){
     $pluginData = $realPlugin->toArray();
     $pluginData['id'] = 0;
     $plugin->fromArray($pluginData);
-    $props = $realPlugin->getProperties();
-    $plugin->setProperties($props);
     $plugin->addMany($pluginEvents);
     $plugins[] = $plugin;
 }
 
-unset($realPlugins,$pluginData,$props);
+unset($realPlugins,$pluginData);
 
 return $plugins;

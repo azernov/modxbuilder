@@ -28,12 +28,10 @@ foreach($realTemplateVars as $realTemplateVar){
     $templateVarData = $realTemplateVar->toArray();
     $templateVarData['id'] = 0;
     $templateVar->fromArray($templateVarData);
-    $props = $realTemplateVar->getProperties();
-    $templateVar->setProperties($props);
     $templateVar->addMany($templateVarTemplates);
     $templateVars[] = $templateVar;
 }
 
-unset($realTemplateVars,$templateVarData,$props);
+unset($realTemplateVars,$templateVarData);
 
 return $templateVars;

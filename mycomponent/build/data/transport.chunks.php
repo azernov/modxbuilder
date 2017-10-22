@@ -25,11 +25,9 @@ foreach($realChunks as $realChunk){
     $chunkData = $realChunk->toArray();
     $chunkData['id'] = 0;
     $chunk->fromArray($chunkData);
-    $props = $realChunk->getProperties();
-    $chunk->setProperties($props);
     $chunks[] = $chunk;
 }
 
-unset($realChunks,$chunkData,$props);
+unset($realChunks,$chunkData);
 
 return $chunks;

@@ -458,7 +458,7 @@ class modxBuilder
         $this->builder->putVehicle($vehicle);
 
         //Define file resolvers
-        $resolvers = include $this->config['resolvers'] . 'resolver.files.php';
+        $resolvers = include $this->config['resolvers'] . 'resolvers.php';
         if(!is_array($resolvers)){
             $this->modx->log(modX::LOG_LEVEL_INFO,'Are file resolvers empty? Skip them');
         }

@@ -1,4 +1,4 @@
-<?
+<?php
 
 //If you need to update only builder component files - set COMPONENT_BUILD to true.
 define("COMPONENT_BUILD", true);

@@ -104,7 +104,7 @@ class modxBuilder
         }
 
         // Set the package name and root path of that package
-        $this->modx->setPackage($this->config['package_name'], $this->config["package_dir"]);
+        $this->modx->setPackage($this->config['package_name'], $this->config["model_dir"].'/');
         $this->modx->setDebug($debug);
 
         //$generator = $manager->getGenerator();  // Станадртное получение mysql генератора

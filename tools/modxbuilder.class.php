@@ -367,6 +367,12 @@ class modxBuilder
         if(file_exists($this->config['data'] . 'setup.options.php')){
             $attrs['setup-options'] = array('source' => $this->config['data'] . 'setup.options.php');
         }
+        if(file_exists($this->config['data'] . 'setup.requires.php')){
+            $requires = include $this->config['data'] . 'setup.requires.php';
+            if(!empty($requires)){
+                $attrs['requires'] = $requires;
+            }
+        }
         $this->builder->setPackageAttributes($attrs);
     }
 

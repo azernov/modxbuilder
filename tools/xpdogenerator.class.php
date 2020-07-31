@@ -80,7 +80,8 @@ EOD;
         $xmlContent[] = "<model package=\"{$package}\" baseClass=\"{$baseClass}\" platform=\"mysql\" defaultEngine=\"MyISAM\" version=\"{$schemaVersion}\">";
         //read list of tables
         $dbname= $this->manager->xpdo->escape($this->manager->xpdo->config['dbname']);
-        $tableLike= ($tablePrefix && $restrictPrefix) ? " LIKE '{$tablePrefix}%'" : '';
+        $tablePrefixEscaped = str_replace('_','\_', $tablePrefix);
+        $tableLike= ($tablePrefix && $restrictPrefix) ? " LIKE '{$tablePrefixEscaped}%'" : '';
         $tablesStmt= $this->manager->xpdo->prepare("SHOW TABLES FROM {$dbname}{$tableLike}");
         $tstart = microtime(true);
         $tablesStmt->execute();

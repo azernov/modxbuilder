@@ -21,6 +21,7 @@ if ($object->xpdo) {
         case xPDOTransport::ACTION_UPGRADE:
             break;
         case xPDOTransport::ACTION_UNINSTALL:
+            //TODO add your database related custom objects
             //$manager->removeObjectContainer('myObjectClass');
             break;
     }

@@ -23,6 +23,8 @@ foreach($realTemplates as $realTemplate){
     $template = $this->modx->newObject('modTemplate');
     $templateData = $realTemplate->toArray();
     $templateData['id'] = 0;
+    //TODO remove comment if you want to make templates static
+    //$templateData['static'] = 1;
     $template->fromArray($templateData);
     $templates[] = $template;
 }

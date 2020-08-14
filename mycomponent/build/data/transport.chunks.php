@@ -24,6 +24,8 @@ foreach($realChunks as $realChunk){
     $chunk = $this->modx->newObject('modChunk');
     $chunkData = $realChunk->toArray();
     $chunkData['id'] = 0;
+    //TODO remove comment if you want to make your chunks static
+    //$chunkData['static'] = 1;
     $chunk->fromArray($chunkData);
     $chunks[] = $chunk;
 }

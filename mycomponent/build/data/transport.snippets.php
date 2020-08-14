@@ -24,6 +24,8 @@ foreach($realSnippets as $realSnippet){
     $snippet = $this->modx->newObject('modSnippet');
     $snippetData = $realSnippet->toArray();
     $snippetData['id'] = 0;
+    //TODO remove comment if you want to make your snippets static
+    //$snippetData['static'] = 1;
     $snippet->fromArray($snippetData);
     $snippets[] = $snippet;
 }

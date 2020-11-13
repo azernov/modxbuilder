@@ -235,7 +235,7 @@ class modxBuilder
         $attr[xPDOTransport::RELATED_OBJECT_ATTRIBUTES]['Templates'] = array(
             xPDOTransport::PRESERVE_KEYS => true,
             xPDOTransport::UPDATE_OBJECT => $updateObject,
-            xPDOTransport::UNIQUE_KEY => 'name',
+            xPDOTransport::UNIQUE_KEY => 'templatename',
         );
         return $category->addMany($templates);
     }

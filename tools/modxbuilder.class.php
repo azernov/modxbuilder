@@ -333,6 +333,27 @@ class modxBuilder
     }
 
     /**
+     * @param modEvent[] $events
+     * @param array $attr
+     * @param bool $updateObject
+     * @return bool
+     */
+    public function addSystemEvents($events, $attr = array(), $updateObject = false){
+        $noError = true;
+
+        $sysSettingsAttr = array_merge(array(
+            xPDOTransport::UNIQUE_KEY => 'name',
+            xPDOTransport::PRESERVE_KEYS => true,
+            xPDOTransport::UPDATE_OBJECT => $updateObject,
+        ),$attr);
+        foreach ($events as $event) {
+            $vehicle = $this->builder->createVehicle($event,$sysSettingsAttr);
+            $noError = $noError && $this->builder->putVehicle($vehicle);
+        }
+        return $noError;
+    }
+
+    /**
      * @param modMenu[] $menus
      * @param array $attr
      * @param bool $updateObject
@@ -472,7 +493,7 @@ class modxBuilder
             $count = $this->addResolvers($vehicle,$resolvers);
             $this->modx->log(modX::LOG_LEVEL_INFO, 'Added resolvers: ' . $count . '.');
         }
-        
+
         $this->builder->putVehicle($vehicle);
 
         //Define system settings
@@ -482,6 +503,15 @@ class modxBuilder
         } else {
             $this->addSystemSettings($settings);
             $this->modx->log(modX::LOG_LEVEL_INFO,'Added system settings: '.count($settings).'.');
+        }
+
+        //Define system events
+        $events = include $this->config['data'].'transport.events.php';
+        if (!is_array($events)) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'Are events empty? Skip them');
+        } else {
+            $this->addSystemEvents($events);
+            $this->modx->log(modX::LOG_LEVEL_INFO,'Added system events: '.count($events).'.');
         }
 
         //Define menu items

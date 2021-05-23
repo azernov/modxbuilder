@@ -8,7 +8,7 @@ $builderRoot = $root . "modxbuilder/";
 $modxRoot = $root . "www/";
 
 $buildConfig = array(
-    //Name for displaying
+    //Name for displaying and category name
     "real_package_name" => "MyComponent",
     //name for folder
     "package_name" => "mycomponent",

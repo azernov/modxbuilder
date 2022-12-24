@@ -1,0 +1,4 @@
+[[+real_package_name]] [[+package_version]]-[[+package_release]]
+==========================================
+[[+input]]
+

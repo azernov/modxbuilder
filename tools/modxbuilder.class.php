@@ -555,7 +555,23 @@ class modxBuilder
         $changeLogItemTemplate = file_get_contents($this->config['build'].'templates/changelog.item.txt');
 
         $readmeTemplate = $this->parseString($readmeTemplate, $this->config);
-        $changeLogItemTemplate = $this->parseString($changeLogItemTemplate, $this->config);
+
+        $prompt = "What's new?:";
+        $emptyLinesCount = 0;
+        $inputContent = '';
+        while($emptyLinesCount < 1){
+            $line = readline($prompt);
+            if(!empty($line)){
+                $inputContent .= $line."\n";
+            }
+            else{
+                $emptyLinesCount++;
+            }
+        }
+
+        $changeLogItemTemplate = $this->parseString($changeLogItemTemplate, array_merge($this->config, [
+            'input' => $inputContent
+        ]));
 
         file_put_contents($this->config['source_docs'].'readme.txt', $readmeTemplate);
         $this->filePrependContent($this->config['source_docs'].'changelog.txt', $changeLogItemTemplate);

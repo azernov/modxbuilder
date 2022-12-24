@@ -21,7 +21,10 @@ class modxBuilder
     public function __construct(&$modx, $config)
     {
         $this->modx = &$modx;
-        $this->config = array(//List default settings
+        $version = include($config['build'].'config/version.php');
+        $this->config = array(
+            //List default settings
+            'package_version' => implode('.', $version)
         );
         $this->config = array_merge($this->config, $config);
     }
@@ -399,6 +402,8 @@ class modxBuilder
 
     public function buildComponent()
     {
+        $this->updateVersionAndDocs();
+
         $this->getPackageBulder();
         $this->builder->createPackage(str_replace(' ','',$this->config['real_package_name']), $this->config['package_version'], $this->config['package_release']);
         $namespace = $this->config['package_name'];
@@ -535,6 +540,81 @@ class modxBuilder
         else{
             $this->modx->log(modX::LOG_LEVEL_ERROR,'Something went wrong... Error while packing into zip');
         }
+    }
+
+    public function updateVersionAndDocs(){
+        //Апдейтим описание версии и changelog
+        $versionFilePath = $this->config['build'].'config/version.php';
+        $version = include($versionFilePath);
+        $version['minor']++;
+        file_put_contents($versionFilePath, "<?php\n\nreturn ".var_export($version, true).";");
+
+        $this->config['package_version'] = implode('.', $version);
+
+        $readmeTemplate = file_get_contents($this->config['build'].'templates/readme.txt');
+        $changeLogItemTemplate = file_get_contents($this->config['build'].'templates/changelog.item.txt');
+
+        $readmeTemplate = $this->parseString($readmeTemplate, $this->config);
+        $changeLogItemTemplate = $this->parseString($changeLogItemTemplate, $this->config);
+
+        file_put_contents($this->config['source_docs'].'readme.txt', $readmeTemplate);
+        $this->filePrependContent($this->config['source_docs'].'changelog.txt', $changeLogItemTemplate);
+    }
+
+    protected function filePrependContent($filePath, $content){
+        //if(!file_exists($filePath))
+        $handle = fopen($filePath, "r+");
+        $len = strlen($content);
+        $finalLen = filesize($filePath) + $len;
+        $cacheOld = fread($handle, $len);
+        rewind($handle);
+        $i = 1;
+        while (ftell($handle) < $finalLen) {
+            fwrite($handle, $content);
+            $content = $cacheOld;
+            $cacheOld = fread($handle, $len);
+            fseek($handle, $i * $len);
+            $i++;
+        }
+        fclose($handle);
+    }
+
+    protected function makePlaceholders(
+        array $array = array(),
+              $plPrefix = '',
+              $prefix = '[[+',
+              $suffix = ']]',
+              $uncacheable = true
+    )
+    {
+        $result = ['pl' => [], 'vl' => []];
+
+        $uncached_prefix = str_replace('[[', '[[!', $prefix);
+        foreach ($array as $k => $v) {
+            if (is_array($v)) {
+                $result = array_merge_recursive($result,
+                    $this->makePlaceholders($v, $plPrefix . $k . '.', $prefix, $suffix, $uncacheable));
+            } else {
+                $pl = $plPrefix . $k;
+                $result['pl'][$pl] = $prefix . $pl . $suffix;
+                $result['vl'][$pl] = $v;
+                if ($uncacheable) {
+                    $result['pl']['!' . $pl] = $uncached_prefix . $pl . $suffix;
+                    $result['vl']['!' . $pl] = $v;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    protected function parseString($string, $settings){
+        $pl1 = $this->makePlaceholders($settings, '', '{', '}', false);
+        $pl2 = $this->makePlaceholders($settings, '', '[[+', ']]', false);
+
+        return str_replace($pl1['pl'], $pl1['vl'],
+            str_replace($pl2['pl'], $pl2['vl'], $string)
+        );
     }
 
     /**
